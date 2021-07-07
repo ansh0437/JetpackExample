@@ -1,0 +1,175 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
+    id 'kotlin-kapt'
+    id 'androidx.navigation.safeargs.kotlin'
+    id 'dagger.hilt.android.plugin'
+}
+
+def keystorePropertiesFile = rootProject.file("app/keystore/example.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+static def getDate() {
+    def date = new Date()
+    def formattedDate = date.format('yyyyMMddHHmm')
+    return formattedDate
+}
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
+
+    defaultConfig {
+        applicationId "com.example.jetpack"
+
+        minSdkVersion 21
+        targetSdkVersion 30
+
+        versionCode 1
+        versionName "1.0"
+    }
+
+    signingConfigs {
+        example {
+            storeFile file(keystoreProperties.getProperty('storeFile'))
+            keyAlias keystoreProperties.getProperty('keyAlias')
+            storePassword keystoreProperties.getProperty('storePassword')
+            keyPassword keystoreProperties.getProperty('keyPassword')
+        }
+    }
+
+    buildTypes {
+        debug {
+            zipAlignEnabled false
+            minifyEnabled false
+            shrinkResources false
+            debuggable true
+
+            versionNameSuffix "-d-${getDate()}"
+
+            signingConfig signingConfigs.example
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        release {
+            zipAlignEnabled true
+            minifyEnabled true
+            shrinkResources true
+            debuggable false
+
+            signingConfig signingConfigs.example
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        releaseWithDebugger {
+            initWith release
+            debuggable true
+
+            versionNameSuffix "-rd-${getDate()}"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
+    buildFeatures {
+        dataBinding = true
+    }
+
+    applicationVariants.all { variant ->
+        def appName = "JetpackExample"
+        variant.outputs.all { output ->
+            def newApkName = "${appName} (${variant.versionName}}).apk"
+            if (variant.name == 'release') {
+                newApkName = "${appName} (${variant.versionName} - ${getDate()}).apk"
+            }
+            output.outputFileName = new File(newApkName)
+        }
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    // KTX
+    implementation 'androidx.core:core-ktx:1.6.0'
+    implementation 'androidx.activity:activity-ktx:1.2.3'
+    implementation 'androidx.fragment:fragment-ktx:1.3.5'
+
+    // Android Core & UI
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+
+    // Navigation Graph
+    implementation "androidx.navigation:navigation-fragment-ktx:2.3.5"
+    implementation "androidx.navigation:navigation-ui-ktx:2.3.5"
+
+    // View Model
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+
+    // Firebase
+//    implementation 'com.google.firebase:firebase-core:19.0.0'
+
+    // Firebase Performance
+//    implementation 'com.google.firebase:firebase-perf:20.0.1'
+
+    // Firebase Analytics
+//    implementation 'com.google.firebase:firebase-analytics-ktx:19.0.0'
+
+    // Firebase Crashlytics
+//    implementation 'com.google.firebase:firebase-crashlytics-ktx:18.1.0'
+
+    // Firebase Push Notification
+//    implementation 'com.google.firebase:firebase-messaging:22.0.0'
+
+    // Google Maps
+    implementation 'com.google.android.gms:play-services-maps:17.0.1'
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
+
+    // Retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
+
+    // Room
+    implementation 'androidx.room:room-runtime:2.3.0'
+    implementation 'androidx.room:room-ktx:2.3.0'
+    kapt 'androidx.room:room-compiler:2.3.0'
+
+    // Resource Debugger
+    implementation "com.facebook.stetho:stetho:1.5.1"
+
+    // Kotlin Coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1"
+
+    // Image
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    kapt 'com.github.bumptech.glide:compiler:4.11.0'
+
+    // Hilt
+    implementation "com.google.dagger:hilt-android:2.33-beta"
+    implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
+    kapt "com.google.dagger:hilt-android-compiler:2.33-beta"
+    kapt 'androidx.hilt:hilt-compiler:1.0.0'
+
+    // Testing
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+}
